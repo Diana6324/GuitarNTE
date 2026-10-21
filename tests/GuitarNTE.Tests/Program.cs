@@ -31,6 +31,7 @@ internal static class Program
     [STAThread]
     static int Main(string[] args)
     {
+        UiText.SetLanguage("zh-CN"); // Stable baseline on English and Chinese Windows runners.
         if (args.Contains("--receiver")) { Receiver.Run(args); return 0; }
         if (args.Contains("--ui-smoke")) { return UiSmoke.Run(); }
         if (args.Contains("--ui-headless")) { return UiSmoke.Run(true); }
@@ -325,6 +326,28 @@ internal static class Program
             File.WriteAllText(Path.Combine(root, "settings.json"), "{\"Version\":99}"); Check(store.LoadSettings().Countdown == 5 && File.Exists(Path.Combine(root, "settings.json")), "bad settings preserved");
             Throws<FormatException>(() => store.SaveSong(new SongProject { Id = "../bad" }));
             Environment.SetEnvironmentVariable("GUITAR_NTE_DATA", null);
+        });
+        Test("language preference preserves legacy settings and localizes core errors", () =>
+        {
+            var legacy = System.Text.Json.JsonSerializer.Deserialize<AppSettings>("{\"Countdown\":3}")!;
+            Check(legacy.Language == "" && legacy.Countdown == 3, "missing language follows Windows without resetting settings");
+            var original = new AppSettings { Language = "en", Countdown = 7 };
+            original.KeyMap[52] = "Z";
+            var copy = LibraryStore.Copy(original); copy.KeyMap[52] = "X";
+            Check(original.KeyMap[52] == "Z" && copy.Language == "en" && copy.Countdown == 7, "language-only update uses an independent settings copy");
+            try
+            {
+                UiText.SetLanguage("en");
+                Check(UiText.Title == "NTE Piano & Guitar Player" && new SongProject().Title == "New score", "English title and new score");
+                try { TextScoreParser.Parse("invalid", Notation.NoteNames, 120); throw new Exception("Expected parser error"); }
+                catch (ScoreFormatException e) { Check(e.Message.Contains("Line 1, column 1") && e.Message.Contains("note names"), "English position and parser message"); }
+                var clock = new FakeClock(); using var engine = new PlaybackEngine(new FakeOutput(), clock, false);
+                engine.Start(Compile("C4"), 1, 40, 1, true);
+                Check(engine.Status.Message.Contains("Preview countdown"), "English background playback message");
+                engine.Pause(); Check(engine.Status.Message.Contains("Paused"), "English default pause message");
+                Check(new InputAccessReport(new(0x2000), new(0x3000)).Message.Contains("Windows blocks input"), "English permission guidance");
+            }
+            finally { UiText.SetLanguage("zh-CN"); }
         });
         if (args.Contains("--realtime")) Test("three minute real worker timing", Realtime);
         if (args.Contains("--native")) Test("native SendInput 36 keys and game focus loss", NativeTest);

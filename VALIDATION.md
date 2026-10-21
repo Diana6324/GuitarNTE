@@ -1,5 +1,20 @@
 # 公开版本验证记录
 
+## v1.1.0 · 双语界面与项目改名
+
+2026-10-21（北京时间），Windows x64 / .NET SDK 10.0.400。
+
+- Release 构建：0 警告、0 错误；自动断言集：`RESULT 27 passed, 0 failed`。
+- WPF 冒烟覆盖中英文即时切换、两份资源键一致、英文静态资源无未翻译中文、英文解析错误与后台演奏提示、语言偏好独立保存及重启恢复。
+- 切换语言时保留曲谱文本、无效数字草稿及未应用键位；预演期间禁用语言选择，停止后恢复。
+- 核对中英文普通与紧凑布局、英文完整标题与语言控件不重叠；文档截图使用隔离的测试曲库。
+- 改名保留 `GuitarNTE.exe`、`%LocalAppData%\GuitarNTE`、设置版本与曲谱格式，不迁移或重写真实用户曲库。
+- Windows 自带对话框控件和系统错误明细仍遵循系统语言；已有曲谱标题、文本、路径和 MIDI 内嵌轨名不翻译。
+
+English: v1.1.0 adds live English / Chinese UI, persisted language preferences and bilingual documentation. The Release build, 27 assertions and WPF smoke cover resource parity, English messages, invalid draft preservation, restart persistence and compact layouts. Existing user content is retained. Native game input and every Windows display environment have not been manually certified.
+
+## v1.0.0 · 首次公开发布
+
 日期：2026-10-21（北京时间）；版本：v1.0.0。
 
 ## 本地环境与结果

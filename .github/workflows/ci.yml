@@ -40,9 +40,9 @@ jobs:
       - name: Upload portable package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: GuitarNTE-win-x64
+          name: NTE-Piano-Guitar-Player-win-x64
           path: |
-            artifacts/GuitarNTE-win-x64.zip
+            artifacts/NTE-Piano-Guitar-Player-win-x64.zip
             artifacts/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14
@@ -63,10 +63,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          gh run download $env:GITHUB_RUN_ID --repo $env:GITHUB_REPOSITORY --name GuitarNTE-win-x64 --dir artifacts
+          gh run download $env:GITHUB_RUN_ID --repo $env:GITHUB_REPOSITORY --name NTE-Piano-Guitar-Player-win-x64 --dir artifacts
           if ($LASTEXITCODE -ne 0) { throw 'Artifact download failed' }
           $notes = "docs/releases/$env:RELEASE_TAG.md"
-          $releaseArgs = @('release', 'create', $env:RELEASE_TAG, 'artifacts/GuitarNTE-win-x64.zip', 'artifacts/SHA256SUMS.txt', '--repo', $env:GITHUB_REPOSITORY, '--verify-tag', '--title', "Guitar NTE $env:RELEASE_TAG")
+          $releaseArgs = @('release', 'create', $env:RELEASE_TAG, 'artifacts/NTE-Piano-Guitar-Player-win-x64.zip', 'artifacts/SHA256SUMS.txt', '--repo', $env:GITHUB_REPOSITORY, '--verify-tag', '--title', "NTE Piano & Guitar Player $env:RELEASE_TAG")
           if (Test-Path -LiteralPath $notes) { $releaseArgs += @('--notes-file', $notes) }
           else { $releaseArgs += '--generate-notes' }
           gh @releaseArgs

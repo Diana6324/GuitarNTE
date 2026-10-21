@@ -3,10 +3,11 @@
     <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>GuitarNTE</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.0.0</Version>
-    <Product>Guitar NTE</Product>
-    <Description>Offline guitar and piano keyboard player for Windows.</Description>
-    <RepositoryUrl>https://github.com/Diana6324/GuitarNTE</RepositoryUrl>
+    <Version>1.1.0</Version>
+    <Product>异环钢琴吉他演奏工具</Product>
+    <Title>NTE Piano &amp; Guitar Player</Title>
+    <Description>Bilingual offline piano and guitar MIDI keyboard player for Neverness to Everness (NTE) on Windows.</Description>
+    <RepositoryUrl>https://github.com/Diana6324/NTE-Piano-Guitar-Player</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup><ProjectReference Include="../GuitarNTE.Core/GuitarNTE.Core.csproj" /></ItemGroup>

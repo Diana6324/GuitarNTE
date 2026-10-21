@@ -1,5 +1,7 @@
 # 开发与发布
 
+[简体中文](DEVELOPMENT.md) | [English](DEVELOPMENT.en.md)
+
 ## 环境与验证
 
 Windows 10 / 11 x64 与 .NET 10 SDK。`global.json` 允许使用已安装的最新 .NET 10 功能带；NuGet 版本由各项目的 `packages.lock.json` 锁定。
@@ -60,3 +62,7 @@ py -3.10 -m venv .venv-transcribe
 使用 `--install` 才会向本机曲库加入不覆盖已有项目的副本；`--reuse` 要求源文件哈希与识别参数匹配。`adapt_score_midi.py` 用于已有 MIDI 的吉他音域适配，要求显式提供来源与许可；它会在输入目录创建 `normalized-score.midi`，请使用可写的素材工作副本。`synthesize_preview.py` 使用合成音色生成参考试听。各参数见脚本 `--help`。
 
 不要将生成的媒体、曲库 JSON、缓存、模型或第三方乐谱作为软件源码提交。
+
+## 界面本地化
+
+静态文案位于 `src/GuitarNTE.App/Strings/zh-CN.xaml` 和 `en.xaml`，两份资源键必须一致，XAML 使用 `DynamicResource`。动态提示由 Core 的 `UiText.T(中文, English)` 提供，演奏后台线程读取同一语言选择。设置字段 `Language` 支持 `zh-CN`、`en`，缺省值沿用 Windows 界面语言。切换语言单独保存设置副本，不解析或重写当前草稿；界面测试覆盖双语切换、重启记忆和紧凑布局。

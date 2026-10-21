@@ -1,3 +1,4 @@
+using GuitarNTE.Core;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -10,11 +11,11 @@ internal sealed record IntegrityInfo(int? Level, int Error = 0)
 {
     internal string Label => Level switch
     {
-        null => "无法读取",
-        >= 0x4000 => "系统权限",
-        >= 0x3000 => "管理员权限",
-        >= 0x2000 => "普通权限",
-        _ => "低权限"
+        null => UiText.T("无法读取", "Unknown"),
+        >= 0x4000 => UiText.T("系统权限", "System"),
+        >= 0x3000 => UiText.T("管理员权限", "Administrator"),
+        >= 0x2000 => UiText.T("普通权限", "Standard"),
+        _ => UiText.T("低权限", "Low integrity")
     };
 }
 internal sealed record InputAccessReport(IntegrityInfo Sender, IntegrityInfo Target)
@@ -23,9 +24,9 @@ internal sealed record InputAccessReport(IntegrityInfo Sender, IntegrityInfo Tar
     internal bool Known => Sender.Level.HasValue && Target.Level.HasValue;
     internal bool CanRestartAsAdmin => Blocked && Sender.Level < 0x3000 && Target.Level <= 0x3000;
     internal string Message => Blocked
-        ? $"游戏：{Target.Label} · 工具：{Sender.Label}。Windows 会拦截按键，请点击「管理员重启」并确认系统弹窗。"
-        : Known ? $"游戏：{Target.Label} · 工具：{Sender.Label}。输入权限匹配。"
-        : $"游戏：{Target.Label} · 工具：{Sender.Label}。权限检查不完整（错误 {Target.Error}/{Sender.Error}）。";
+        ? UiText.T($"游戏：{Target.Label} · 工具：{Sender.Label}。Windows 会拦截按键，请点击「管理员重启」并确认系统弹窗。", $"Game: {Target.Label} · App: {Sender.Label}. Windows blocks input. Click Restart as admin and confirm the system prompt.")
+        : Known ? UiText.T($"游戏：{Target.Label} · 工具：{Sender.Label}。输入权限匹配。", $"Game: {Target.Label} · App: {Sender.Label}. Input permissions are compatible.")
+        : UiText.T($"游戏：{Target.Label} · 工具：{Sender.Label}。权限检查不完整（错误 {Target.Error}/{Sender.Error}）。", $"Game: {Target.Label} · App: {Sender.Label}. Permission check incomplete (errors {Target.Error}/{Sender.Error}).");
     internal void RequireCompatible()
     {
         if (Blocked) throw new InvalidOperationException(Message);
@@ -74,11 +75,11 @@ internal static class ElevatedRestart
     }
     internal static bool Start(string dataRoot, string? songId)
     {
-        string exe = Environment.ProcessPath ?? throw new InvalidOperationException("无法确定程序路径。");
+        string exe = Environment.ProcessPath ?? throw new InvalidOperationException(UiText.T("无法确定程序路径。", "Cannot determine the application path."));
         try
         {
             using var child = Process.Start(CreateStartInfo(exe, dataRoot, songId, Environment.ProcessId));
-            if (child == null) throw new InvalidOperationException("管理员进程未能启动，当前窗口已保留。");
+            if (child == null) throw new InvalidOperationException(UiText.T("管理员进程未能启动，当前窗口已保留。", "Could not start the elevated process. The current window was retained."));
             return true;
         }
         catch (Win32Exception e) when (e.NativeErrorCode == 1223) { return false; } // User cancelled UAC.

@@ -10,7 +10,7 @@ public static class KeyboardLayout
     public static int MinimumPitch(InstrumentMode instrument) => instrument switch
     {
         InstrumentMode.Guitar => 52, InstrumentMode.Piano => 48,
-        _ => throw new FormatException("乐器模式无效。")
+        _ => throw new FormatException(UiText.T("乐器模式无效。", "Invalid instrument mode."))
     };
     public static KeyBinding Binding(string name, InstrumentMode instrument)
     {
@@ -21,7 +21,7 @@ public static class KeyboardLayout
             if (parts[0].Equals("Shift", StringComparison.OrdinalIgnoreCase)) return new(key, new("Shift", 0xA0, 42));
             if (parts[0].Equals("Ctrl", StringComparison.OrdinalIgnoreCase)) return new(key, new("Ctrl", 0xA2, 29));
         }
-        throw new FormatException($"按键 {name} 无效。钢琴半音使用 Shift+字母 或 Ctrl+字母；吉他使用单键。");
+        throw new FormatException(UiText.T($"按键 {name} 无效。钢琴半音使用 Shift+字母 或 Ctrl+字母；吉他使用单键。", $"Invalid key {name}. Use Shift+letter or Ctrl+letter for piano semitones; use a single key for guitar."));
     }
     public static readonly IReadOnlyDictionary<string, KeyDefinition> Keys = BuildKeys();
     static Dictionary<string, KeyDefinition> BuildKeys()
@@ -61,16 +61,16 @@ public static class KeyboardLayout
         ValidateMap(settings.KeyMap, InstrumentMode.Guitar);
         ValidateMap(settings.PianoKeyMap, InstrumentMode.Piano);
         var used = settings.ActiveKeyMap.Values.Select(k => Binding(k, settings.Instrument).Key.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        if (!Keys.ContainsKey(settings.ToggleKey) || !Keys.ContainsKey(settings.StopKey)) throw new FormatException("热键无效，请使用支持的单键名称。");
-        if (settings.ToggleKey.Equals(settings.StopKey, StringComparison.OrdinalIgnoreCase) || used.Contains(settings.ToggleKey) || used.Contains(settings.StopKey)) throw new FormatException("两个热键必须不同，且不能与演奏键重叠（包括组合键的基础按键）。");
-        if (!double.IsFinite(settings.Countdown) || settings.Countdown is < 1 or > 30 || settings.PressMilliseconds is < 10 or > 500 || settings.Loops is < 1 or > 100) throw new FormatException("倒计时 1–30 秒，按键 10–500 毫秒，循环 1–100 次。");
+        if (!Keys.ContainsKey(settings.ToggleKey) || !Keys.ContainsKey(settings.StopKey)) throw new FormatException(UiText.T("热键无效，请使用支持的单键名称。", "Invalid hotkey. Use a supported single-key name."));
+        if (settings.ToggleKey.Equals(settings.StopKey, StringComparison.OrdinalIgnoreCase) || used.Contains(settings.ToggleKey) || used.Contains(settings.StopKey)) throw new FormatException(UiText.T("两个热键必须不同，且不能与演奏键重叠（包括组合键的基础按键）。", "Hotkeys must be different and cannot overlap playing keys, including base keys of chords."));
+        if (!double.IsFinite(settings.Countdown) || settings.Countdown is < 1 or > 30 || settings.PressMilliseconds is < 10 or > 500 || settings.Loops is < 1 or > 100) throw new FormatException(UiText.T("倒计时 1–30 秒，按键 10–500 毫秒，循环 1–100 次。", "Countdown: 1–30 s; key press: 10–500 ms; loops: 1–100."));
     }
     static void ValidateMap(Dictionary<int, string> map, InstrumentMode instrument)
     {
         int min = MinimumPitch(instrument);
-        if (map == null || map.Count != 36 || Enumerable.Range(min, 36).Any(p => !map.ContainsKey(p))) throw new FormatException($"键位映射必须包含 {Pitches.Name(min)}–{Pitches.Name(min + 35)} 的全部 36 个音。");
+        if (map == null || map.Count != 36 || Enumerable.Range(min, 36).Any(p => !map.ContainsKey(p))) throw new FormatException(UiText.T($"键位映射必须包含 {Pitches.Name(min)}–{Pitches.Name(min + 35)} 的全部 36 个音。", $"Key bindings must include all 36 notes from {Pitches.Name(min)} to {Pitches.Name(min + 35)}."));
         var used = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var key in map.Values)
-            if (string.IsNullOrWhiteSpace(key) || !used.Add(Binding(key, instrument).Name)) throw new FormatException($"按键 {key} 无效或重复。");
+            if (string.IsNullOrWhiteSpace(key) || !used.Add(Binding(key, instrument).Name)) throw new FormatException(UiText.T($"按键 {key} 无效或重复。", $"Invalid or duplicate key: {key}."));
     }
 }

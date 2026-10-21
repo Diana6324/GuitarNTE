@@ -11,12 +11,12 @@ internal static class MidiLibraryImport
 {
     internal static SongProject ReadSong(string path)
     {
-        if (new FileInfo(path).Length > 32 * 1024 * 1024) throw new FormatException("MIDI 文件不能超过 32 MB。");
+        if (new FileInfo(path).Length > 32 * 1024 * 1024) throw new FormatException(UiText.T("MIDI 文件不能超过 32 MB。", "MIDI files cannot exceed 32 MB."));
         byte[] bytes = File.ReadAllBytes(path);
         var tracks = MidiImporter.Inspect(bytes);
-        if (!tracks.Any(t => t.NoteCount > 0)) throw new FormatException("MIDI 没有音符。");
+        if (!tracks.Any(t => t.NoteCount > 0)) throw new FormatException(UiText.T("MIDI 没有音符。", "The MIDI file contains no notes."));
         string title = Path.GetFileNameWithoutExtension(path);
-        if (string.IsNullOrWhiteSpace(title)) title = "未命名 MIDI";
+        if (string.IsNullOrWhiteSpace(title)) title = UiText.T("未命名 MIDI", "Untitled MIDI");
         return new SongProject
         {
             Title = title.Length > 100 ? title[..100] : title,

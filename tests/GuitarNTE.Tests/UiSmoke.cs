@@ -60,12 +60,17 @@ internal static class UiSmoke
         headless = withoutDesktop;
         root = Path.GetFullPath(headless ? "artifacts/ui-headless/中文路径" : "artifacts/ui-smoke/中文路径"); Directory.CreateDirectory(root);
         Environment.SetEnvironmentVariable("GUITAR_NTE_DATA", Path.Combine(root, "data-" + Guid.NewGuid().ToString("N")));
+        new LibraryStore().SaveSettings(new GuitarNTE.Core.AppSettings { Language = "zh-CN" });
         // The harness creates its own window and must not register production global hotkeys.
         var app = new GuitarNTE.App.App { SuppressStartupWindow = true }; app.InitializeComponent(); app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
         try
         {
             Console.WriteLine("UI initialize"); window = new MainWindow(!headless); Layout(); Pump(); Console.WriteLine("UI ready");
+            var chineseResources = new ResourceDictionary { Source = new Uri("/GuitarNTE;component/Strings/zh-CN.xaml", UriKind.Relative) };
+            var englishResources = new ResourceDictionary { Source = new Uri("/GuitarNTE;component/Strings/en.xaml", UriKind.Relative) };
+            Assert(chineseResources.Keys.Cast<string>().Order().SequenceEqual(englishResources.Keys.Cast<string>().Order()), "both language dictionaries contain the same keys");
+            Assert(englishResources.Values.Cast<string>().All(value => !value.Any(c => c is >= '\u4e00' and <= '\u9fff')), "English resource values contain no untranslated Chinese labels");
             Assert(((SolidColorBrush)window.Background).Color == Color.FromRgb(12, 19, 32), "dark window background");
             Assert(((SolidColorBrush)window.Foreground).Color == Color.FromRgb(231, 238, 248), "readable inherited foreground");
             Assert(Find<TextBox>("ScoreEditor").Text.Length > 10, "initial score loaded");
@@ -151,7 +156,49 @@ internal static class UiSmoke
             window = new MainWindow(!headless); Layout(); Pump();
             Assert(Find<ListBox>("SongList").Items.Count == 6 && Find<TextBlock>("StatusText").Text.Contains("清理 1"), "startup duplicate cleanup and summary");
             Assert(Directory.GetFiles(Path.Combine(store.Root, "DuplicateBackups"), "*.json", SearchOption.AllDirectories).Length == 1, "startup duplicates backed up");
-            Console.WriteLine("UI_SMOKE PASS: theme, search, empty results, draft preservation, library, guitar/piano, playback lock, background folder import, duplicate skipping and recoverable startup cleanup");
+            // Live translation must preserve invalid drafts and un-applied keyboard edits.
+            list = Find<ListBox>("SongList");
+            list.SelectedItem = list.Items.OfType<GuitarNTE.Core.SongProject>().First(s => s.Mode == GuitarNTE.Core.Notation.Numbered);
+            Find<TextBox>("TitleBox").Text = "Bilingual draft · 双语草稿";
+            Find<TextBox>("ScoreEditor").Text = "1 2 3 [1 3 5]:2 0:1\n// Unchanged user content";
+            Find<TextBox>("BpmBox").Text = "invalid numeric draft";
+            Keys()[24].Text = "unapplied binding";
+            string unchangedDraft = Find<TextBox>("ScoreEditor").Text;
+            Find<ComboBox>("LanguageBox").SelectedIndex = 1; Pump();
+            Assert(window.Title == "NTE Piano & Guitar Player" && Find<Button>("ImportFolderButton").Content.ToString() == "Import folder", "window and static controls switch to English");
+            Assert(Find<TextBox>("ScoreEditor").Text == unchangedDraft && Find<TextBox>("BpmBox").Text == "invalid numeric draft" && Keys()[24].Text == "unapplied binding", "language switching preserves invalid editor and keyboard drafts");
+            Assert(new LibraryStore().LoadSettings().Language == "en", "English preference saved independently of invalid numeric fields");
+            Assert(Find<TextBlock>("SyntaxHint").Text.Contains("Example") && Find<TextBlock>("InstrumentHint").Text.Contains("three rows"), "dynamic hints in English");
+            Find<ComboBox>("LanguageBox").SelectedIndex = 0; Pump();
+            Assert(window.Title == "异环钢琴吉他演奏工具" && Find<Button>("ImportFolderButton").Content.ToString() == "导入文件夹", "switch back to exact Chinese title");
+            Find<Expander>("KeyboardExpander").IsExpanded = true; Pump();
+            Find<TextBox>("BpmBox").Text = "120"; Click("恢复默认键位");
+            Find<ComboBox>("LanguageBox").SelectedIndex = 1; Pump();
+            Click("Validate"); Assert(Find<TextBlock>("StatusText").Text == "Score validated", "English validation result");
+            Find<TextBox>("CountdownBox").Text = "1"; Click("▷ Preview"); Wait(1.15);
+            Assert(!Find<ComboBox>("LanguageBox").IsEnabled && Find<TextBlock>("StatusText").Text.Contains("preview"), "language selection disabled during playback and preview message translated");
+            Click("■ Stop"); Assert(Find<ComboBox>("LanguageBox").IsEnabled, "stop restores language selection");
+            Find<Expander>("KeyboardExpander").IsExpanded = false; Find<ScrollViewer>("EditorScroll").ScrollToTop(); Pump(); Capture("10-english-main");
+            if (headless)
+            {
+                host.Measure(new Size(1004, 681)); host.Arrange(new Rect(0, 0, 1004, 681)); host.UpdateLayout(); Pump();
+                foreach (var name in new[] { "LanguageBox", "ImportFolderButton", "PlayButton", "PreviewButton" })
+                {
+                    var control = Find<FrameworkElement>(name); Point origin = control.TransformToAncestor(host).Transform(new Point());
+                    Assert(origin.X >= 0 && origin.Y >= 0 && origin.X + control.ActualWidth <= host.ActualWidth + 1 && origin.Y + control.ActualHeight <= host.ActualHeight + 1, "English compact layout keeps controls visible: " + name);
+                }
+                var brand = Find<TextBlock>("BrandTitle"); var languageControls = Find<StackPanel>("LanguageControls");
+                double brandRight = brand.TransformToAncestor(host).Transform(new Point()).X + brand.DesiredSize.Width;
+                double languageLeft = languageControls.TransformToAncestor(host).Transform(new Point()).X;
+                Assert(brandRight + 12 <= languageLeft, "full English title does not overlap language controls in compact layout");
+                Capture("11-english-compact");
+            }
+            window.Close(); Pump(); window = new MainWindow(!headless); Layout(); Pump();
+            Assert(window.Title == "NTE Piano & Guitar Player" && Find<ComboBox>("LanguageBox").SelectedIndex == 1, "English survives reopening");
+            Find<ListBox>("SongList").SelectedItem = Find<ListBox>("SongList").Items.OfType<GuitarNTE.Core.SongProject>().Single(s => s.Title == "Bilingual draft · 双语草稿"); Pump();
+            Assert(Find<TextBox>("ScoreEditor").Text == unchangedDraft, "user score text survives language switch and reopening");
+            Find<ComboBox>("LanguageBox").SelectedIndex = 0; Pump(); Capture("12-chinese-main");
+            Console.WriteLine("UI_SMOKE PASS: library, playback, import, deduplication, live bilingual UI, invalid draft preservation, language persistence and compact layouts");
             Console.WriteLine("UI_ARTIFACTS " + root); return 0;
         }
         catch (Exception e) { Console.WriteLine("UI_SMOKE FAIL " + e); return 1; }
