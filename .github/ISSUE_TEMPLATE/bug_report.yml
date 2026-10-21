@@ -1,0 +1,24 @@
+name: 问题反馈
+description: 报告可复现的问题
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: 应用与 Windows 版本
+      placeholder: v1.0.0 / Windows 11 x64
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤、预期与实际结果
+      description: 请注明乐器模式；涉及键盘输入时注明工具与目标窗口的管理员权限。
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 截图或最小示例
+      description: 去除账号和个人路径，仅上传有权公开的文件；安全漏洞请使用 SECURITY.md 中的私密渠道。

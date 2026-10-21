@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><AssemblyName>GuitarNTE</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>1.0.0</Version>
+    <Product>Guitar NTE</Product>
+    <Description>Offline guitar and piano keyboard player for Windows.</Description>
+    <RepositoryUrl>https://github.com/Diana6324/GuitarNTE</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../GuitarNTE.Core/GuitarNTE.Core.csproj" /></ItemGroup>
+</Project>

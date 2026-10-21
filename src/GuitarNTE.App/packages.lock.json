@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0-windows7.0": {
+      "Melanchall.DryWetMidi": {
+        "type": "Transitive",
+        "resolved": "8.0.3",
+        "contentHash": "U+Ubol4MhieY2xgZGqcI8H2F/4HWzWKq8/WPHd1SXS7WXaHyEWMnj56vtxKOJFM5FLbj+NOUny5+X2KAzI0YUg=="
+      },
+      "guitarnte.core": {
+        "type": "Project",
+        "dependencies": {
+          "Melanchall.DryWetMidi": "[8.0.3, )"
+        }
+      }
+    }
+  }
+}

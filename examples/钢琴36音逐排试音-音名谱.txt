@@ -1,0 +1,11 @@
+// 选择钢琴模式与音名谱，建议 BPM=120、移调=0。
+// 按截图的高、中、低三排顺序试音，中音 1 暂按 C4。
+// 每排白键 1 2 3 4 5 6 7；Shift 升半音，Ctrl 降半音。
+// 高音：Q Shift+Q W Ctrl+E E R Shift+R T Shift+T Y Ctrl+U U
+C5:0.5 C#5:0.5 D5:0.5 Eb5:0.5 E5:0.5 F5:0.5 F#5:0.5 G5:0.5 G#5:0.5 A5:0.5 Bb5:0.5 B5:0.5 R:2
+// 中音：A Shift+A S Ctrl+D D F Shift+F G Shift+G H Ctrl+J J
+C4:0.5 C#4:0.5 D4:0.5 Eb4:0.5 E4:0.5 F4:0.5 F#4:0.5 G4:0.5 G#4:0.5 A4:0.5 Bb4:0.5 B4:0.5 R:2
+// 低音：Z Shift+Z X Ctrl+C C V Shift+V B Shift+B N Ctrl+M M
+C3:0.5 C#3:0.5 D3:0.5 Eb3:0.5 E3:0.5 F3:0.5 F#3:0.5 G3:0.5 G#3:0.5 A3:0.5 Bb3:0.5 B3:0.5 R:2
+// 和弦分别检查白键、升半音、降半音，以及混合修饰键。
+[C4 E4 G4]:2 R:1 [C#4 F#4 G#4]:2 R:1 [Eb4 Bb4]:2 R:1 [C4 Eb4 G#4]:2

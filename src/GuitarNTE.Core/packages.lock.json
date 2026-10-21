@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Melanchall.DryWetMidi": {
+        "type": "Direct",
+        "requested": "[8.0.3, )",
+        "resolved": "8.0.3",
+        "contentHash": "U+Ubol4MhieY2xgZGqcI8H2F/4HWzWKq8/WPHd1SXS7WXaHyEWMnj56vtxKOJFM5FLbj+NOUny5+X2KAzI0YUg=="
+      }
+    }
+  }
+}

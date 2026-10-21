@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/GuitarNTE.Core/GuitarNTE.Core.csproj" />
+  <Project Path="src/GuitarNTE.App/GuitarNTE.App.csproj" />
+  <Project Path="tests/GuitarNTE.Tests/GuitarNTE.Tests.csproj" />
+</Solution>
