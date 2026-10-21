@@ -1,4 +1,4 @@
-param([switch]$SkipTests, [ValidatePattern('^[A-Za-z0-9_-]+$')][string]$OutputName = 'GuitarNTE-win-x64')
+param([switch]$SkipTests, [ValidatePattern('^[A-Za-z0-9_-]+$')][string]$OutputName = 'NTE-Piano-Guitar-Player-win-x64')
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {
@@ -16,7 +16,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Publish failed' }
     $oldMacLibrary = Join-Path $publishDirectory 'Melanchall_DryWetMidi_Native64.dylib'
     if (Test-Path -LiteralPath $oldMacLibrary) { Remove-Item -LiteralPath $oldMacLibrary }
-    Copy-Item -LiteralPath README.md,LICENSE,THIRD-PARTY-NOTICES.md,VALIDATION.md,CHANGELOG.md -Destination $publishDirectory -Force
+    Copy-Item -LiteralPath README.md,README.en.md,LICENSE,THIRD-PARTY-NOTICES.md,VALIDATION.md,CHANGELOG.md,CONTRIBUTING.md,CONTRIBUTING.en.md,SECURITY.md,SECURITY.en.md,CODE_OF_CONDUCT.md -Destination $publishDirectory -Force
     Copy-Item -LiteralPath docs -Destination $publishDirectory -Recurse -Force
     Copy-Item -LiteralPath examples -Destination $publishDirectory -Recurse -Force
     $runtimeRoot = Join-Path $env:USERPROFILE '.nuget\packages\microsoft.netcore.app.runtime.win-x64'

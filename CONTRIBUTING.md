@@ -1,5 +1,7 @@
 # 贡献指南
 
+[简体中文](CONTRIBUTING.md) | [English](CONTRIBUTING.en.md)
+
 开发环境和命令见 [开发指南](docs/DEVELOPMENT.md)。请从 `main` 创建功能分支，提交范围清楚的 Pull Request，并说明问题、改动后的行为、验证结果和已知限制。
 
 ## 报告问题

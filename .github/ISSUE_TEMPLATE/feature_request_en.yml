@@ -1,0 +1,17 @@
+name: Feature request (English)
+description: Describe a use case and expected behavior
+title: "[Feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: scenario
+    attributes:
+      label: Use case and current problem
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior and acceptable alternatives
+    validations:
+      required: true

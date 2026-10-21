@@ -15,11 +15,11 @@ internal sealed class LibraryStore
         if (!File.Exists(path)) return new();
         try
         {
-            var settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path), Json) ?? throw new FormatException("设置为空");
-            if (settings.Version != 1) throw new FormatException("设置版本不受支持");
+            var settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path), Json) ?? throw new FormatException(UiText.T("设置为空", "Settings are empty"));
+            if (settings.Version != 1) throw new FormatException(UiText.T("设置版本不受支持", "Unsupported settings version"));
             KeyboardLayout.Validate(settings); return settings;
         }
-        catch (Exception e) { Warnings.Add("设置读取失败，已使用默认值；原文件已保留：" + e.Message); return new(); }
+        catch (Exception e) { Warnings.Add(UiText.T("设置读取失败，已使用默认值；原文件已保留：", "Could not read settings. Using defaults; the original file was retained: ") + e.Message); return new(); }
     }
     internal List<SongProject> LoadSongs()
     {
@@ -28,16 +28,16 @@ internal sealed class LibraryStore
         {
             try
             {
-                var song = JsonSerializer.Deserialize<SongProject>(File.ReadAllText(path), Json) ?? throw new FormatException("曲谱为空");
-                if (song.Version != 1 || !Guid.TryParseExact(song.Id, "N", out _) || Path.GetFileNameWithoutExtension(path) != song.Id) throw new FormatException("曲谱版本或编号无效");
-                if (!Enum.IsDefined(song.Mode) || string.IsNullOrWhiteSpace(song.Title) || song.Title.Length > 100 || song.Text == null || song.SelectedTracks == null) throw new FormatException("曲谱内容无效");
+                var song = JsonSerializer.Deserialize<SongProject>(File.ReadAllText(path), Json) ?? throw new FormatException(UiText.T("曲谱为空", "The score is empty"));
+                if (song.Version != 1 || !Guid.TryParseExact(song.Id, "N", out _) || Path.GetFileNameWithoutExtension(path) != song.Id) throw new FormatException(UiText.T("曲谱版本或编号无效", "Invalid score version or ID"));
+                if (!Enum.IsDefined(song.Mode) || string.IsNullOrWhiteSpace(song.Title) || song.Title.Length > 100 || song.Text == null || song.SelectedTracks == null) throw new FormatException(UiText.T("曲谱内容无效", "Invalid score content"));
                 _ = Pitches.Parse(song.Tonic);
-                if (!double.IsFinite(song.Bpm) || song.Bpm is < 20 or > 400 || !double.IsFinite(song.Speed) || song.Speed is < 0.25 or > 4 || song.Transpose is < -48 or > 48) throw new FormatException("曲谱参数无效");
-                if (song.Mode == Notation.Midi && song.MidiBase64 == null) throw new FormatException("MIDI 数据缺失");
+                if (!double.IsFinite(song.Bpm) || song.Bpm is < 20 or > 400 || !double.IsFinite(song.Speed) || song.Speed is < 0.25 or > 4 || song.Transpose is < -48 or > 48) throw new FormatException(UiText.T("曲谱参数无效", "Invalid score parameters"));
+                if (song.Mode == Notation.Midi && song.MidiBase64 == null) throw new FormatException(UiText.T("MIDI 数据缺失", "MIDI data is missing"));
                 if (song.MidiBase64 != null) _ = MidiImporter.Inspect(Convert.FromBase64String(song.MidiBase64));
                 songs.Add(song);
             }
-            catch (Exception e) { Warnings.Add($"无法加载 {Path.GetFileName(path)}，原文件已保留：{e.Message}"); }
+            catch (Exception e) { Warnings.Add(UiText.T($"无法加载 {Path.GetFileName(path)}，原文件已保留：{e.Message}", $"Cannot load {Path.GetFileName(path)}. Original file retained: {e.Message}")); }
         }
         return songs.OrderBy(x => x.Title).ToList();
     }
@@ -50,7 +50,7 @@ internal sealed class LibraryStore
     internal void SaveSettings(AppSettings settings) => AtomicWrite(Path.Combine(Root, "settings.json"), settings);
     string SongPath(string id)
     {
-        if (!Guid.TryParseExact(id, "N", out _)) throw new FormatException("曲谱编号无效。");
+        if (!Guid.TryParseExact(id, "N", out _)) throw new FormatException(UiText.T("曲谱编号无效。", "Invalid score ID."));
         return Path.Combine(Root, "Songs", id + ".json");
     }
     internal void SaveSong(SongProject song) => AtomicWrite(SongPath(song.Id), song);
@@ -71,10 +71,11 @@ internal sealed class LibraryStore
                 songs.Remove(song); removed++;
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException)
-            { Warnings.Add($"无法备份重复曲谱「{song.Title}」，已保留：{e.Message}"); }
+            { Warnings.Add(UiText.T($"无法备份重复曲谱「{song.Title}」，已保留：{e.Message}", $"Cannot back up duplicate score {song.Title}. It was retained: {e.Message}")); }
         }
         return removed;
     }
     internal void DeleteSong(SongProject song) => File.Delete(SongPath(song.Id));
     internal static SongProject Copy(SongProject song) => JsonSerializer.Deserialize<SongProject>(JsonSerializer.Serialize(song, Json), Json)!;
+    internal static AppSettings Copy(AppSettings settings) => JsonSerializer.Deserialize<AppSettings>(JsonSerializer.Serialize(settings, Json), Json)!;
 }

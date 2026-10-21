@@ -1,0 +1,24 @@
+name: Bug report (English)
+description: Report a reproducible problem
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: App and Windows version
+      placeholder: v1.1.0 / Windows 11 x64
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps, expected result and actual result
+      description: Include instrument and UI language. For input issues, state whether the app and game run as administrator.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or minimal sample
+      description: Remove personal details. Share only files you have permission to publish. Use SECURITY.en.md for private vulnerability reports.

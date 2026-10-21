@@ -75,17 +75,17 @@ public sealed class WindowsKeyboardOutput : IKeyboardOutput
             return new Native.INPUT { type = 1, data = new Native.INPUTUNION { keyboard = new Native.KEYBDINPUT { scan = k.ScanCode, flags = 8u | (stroke.Up ? 2u : 0u) | (k.Extended ? 1u : 0u) } } };
         }).ToArray();
         uint sent = Native.SendInput((uint)events.Length, events, Marshal.SizeOf<Native.INPUT>());
-        if (sent != events.Length) throw new Win32Exception(Marshal.GetLastWin32Error(), "键盘输入未完整发送，请检查游戏与工具权限是否一致。");
+        if (sent != events.Length) throw new Win32Exception(Marshal.GetLastWin32Error(), UiText.T("键盘输入未完整发送，请检查游戏与工具权限是否一致。", "Keyboard input was incomplete. Check that the game and this app have compatible permissions."));
     }
     public void KeyDown(IReadOnlyList<int> pitches)
     {
-        if (!IsTargetForeground) throw new InvalidOperationException("所选游戏窗口不在前台。");
+        if (!IsTargetForeground) throw new InvalidOperationException(UiText.T("所选游戏窗口不在前台。", "The selected game window is not in the foreground."));
         if (accessCheckedProcess != Target!.ProcessId)
         {
             InputAccess.Check(Target.ProcessId).RequireCompatible();
             accessCheckedProcess = Target.ProcessId;
         }
-        if (new[] { 0x10, 0x11, 0x12, 0x5B, 0x5C }.Any(vk => Native.GetAsyncKeyState(vk) < 0)) throw new InvalidOperationException("请松开 Shift、Ctrl、Alt 和 Win 键后再演奏。");
+        if (new[] { 0x10, 0x11, 0x12, 0x5B, 0x5C }.Any(vk => Native.GetAsyncKeyState(vk) < 0)) throw new InvalidOperationException(UiText.T("请松开 Shift、Ctrl、Alt 和 Win 键后再演奏。", "Release Shift, Ctrl, Alt and Win before playing."));
         session.KeyDown(pitches, KeyMap, Instrument);
     }
     public void KeyUp(IReadOnlyList<int> pitches) => session.KeyUp(pitches);
@@ -105,7 +105,7 @@ internal sealed class Hotkeys : IDisposable
         if (!TryRegister(newToggle, newStop))
         {
             bool restored = hadOld && TryRegister(oldToggle, oldStop);
-            throw new InvalidOperationException("全局热键已被占用，请更换。" + (restored ? "已保留原热键。" : "当前热键不可用，请修改并应用。"));
+            throw new InvalidOperationException(UiText.T("全局热键已被占用，请更换。", "Global hotkeys are already in use. Choose different keys. ") + (restored ? UiText.T("已保留原热键。", "The previous hotkeys were retained.") : UiText.T("当前热键不可用，请修改并应用。", "Hotkeys are unavailable. Change and apply them.")));
         }
     }
     bool TryRegister(string a, string b)

@@ -1,4 +1,11 @@
-# 使用指南
+# 异环钢琴吉他演奏工具 · 使用指南
+
+[简体中文](USER_GUIDE.md) | [English](USER_GUIDE.en.md)
+
+## 界面语言
+
+右上角选择“中文 / English”即可即时切换并记住偏好；首次启动按 Windows 界面语言选择。应用按钮、状态、错误提示和对话框标题均提供两种语言。切换不修改曲谱标题、内容、音轨选择及未应用键位；即使数字输入暂时无效，也能保存语言偏好。演奏、倒计时、暂停或导入期间需先结束当前操作。Windows 自带对话框按钮和系统错误明细仍遵循系统语言。
+
 
 ## 钢琴模式
 
@@ -12,7 +19,7 @@
 
 ## 直接运行
 
-从 [GitHub Releases](https://github.com/Diana6324/GuitarNTE/releases/latest) 下载 Windows x64 ZIP，完整解压后运行 `GuitarNTE.exe`。无需安装 .NET。`examples/钢琴36音逐排试音-音名谱.txt` 可复制到音名谱中检查三排及半音。
+从 [GitHub Releases](https://github.com/Diana6324/NTE-Piano-Guitar-Player/releases/latest) 下载 Windows x64 ZIP，完整解压后运行 `GuitarNTE.exe`。无需安装 .NET。`examples/钢琴36音逐排试音-音名谱.txt` 可复制到音名谱中检查三排及半音。
 
 1. 在工具里选择吉他或钢琴模式，在游戏里进入对应乐器界面，确认键位与本工具一致。
 2. 选择示例曲谱，或点击「新建」粘贴文本谱；单个 MIDI 点击「导入 MIDI」，批量导入点击「导入文件夹」，然后选择音轨。

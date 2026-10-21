@@ -33,7 +33,7 @@ public sealed class PlaybackEngine : IDisposable
     double position, anchor, deadline, countdown, pressSeconds, lastPublish;
     bool preview;
     bool sustain;
-    string message = "准备就绪";
+    string message = UiText.T("准备就绪", "Ready");
     public event Action<PlaybackStatus>? Changed;
     public PlaybackEngine(IKeyboardOutput output, IPlaybackClock? clock = null, bool runThread = true)
     {
@@ -62,8 +62,8 @@ public sealed class PlaybackEngine : IDisposable
     }
     void Fault(Exception e)
     {
-        state = PlaybackState.Faulted; message = "演奏停止：" + e.Message;
-        try { Release(); } catch (Exception releaseError) { message += "；释放按键失败：" + releaseError.Message; }
+        state = PlaybackState.Faulted; message = UiText.T("演奏停止：", "Playback stopped: ") + e.Message;
+        try { Release(); } catch (Exception releaseError) { message += UiText.T("；释放按键失败：", "; key release failed: ") + releaseError.Message; }
         Publish();
     }
     public void Start(CompiledScore song, double countdownSeconds, int pressMilliseconds, int repeat, bool visualPreview, bool sustainNotes = false)
@@ -71,14 +71,14 @@ public sealed class PlaybackEngine : IDisposable
         lock (gate)
         {
             ObjectDisposedException.ThrowIf(disposed, this);
-            if (song.Notes.Count == 0 || song.Duration <= 0) throw new FormatException("曲谱没有可演奏音符。");
+            if (song.Notes.Count == 0 || song.Duration <= 0) throw new FormatException(UiText.T("曲谱没有可演奏音符。", "The score contains no playable notes."));
             if (!double.IsFinite(countdownSeconds) || countdownSeconds is < 0 or > 30 || pressMilliseconds is < 10 or > 500 || repeat is < 1 or > 100) throw new ArgumentOutOfRangeException(nameof(countdownSeconds));
             Release(); score = song; countdown = countdownSeconds; pressSeconds = pressMilliseconds / 1000d; loops = repeat; preview = visualPreview; sustain = sustainNotes;
             index = 0; loop = 1; position = 0; state = PlaybackState.Countdown; deadline = clock.Now + countdown;
-            message = preview ? "可视预演倒计时（不发送按键）" : "倒计时：请切回选定游戏窗口"; wake.Set(); Publish();
+            message = preview ? UiText.T("可视预演倒计时（不发送按键）", "Preview countdown (no keyboard input)") : UiText.T("倒计时：请切回选定游戏窗口", "Countdown: switch to the selected game window"); wake.Set(); Publish();
         }
     }
-    public void Pause(string reason = "已暂停；F8 继续")
+    public void Pause(string? reason = null)
     {
         lock (gate)
         {
@@ -86,7 +86,7 @@ public sealed class PlaybackEngine : IDisposable
             if (state == PlaybackState.Playing) position = Math.Min(score!.Duration, Math.Max(0, clock.Now - anchor));
             // Never resume after the next unplayed note, even after a delayed scheduler tick.
             if (score != null && index < score.Notes.Count) position = Math.Min(position, score.Notes[index].Start);
-            state = PlaybackState.Paused; message = reason;
+            state = PlaybackState.Paused; message = reason ?? UiText.T("已暂停；F8 继续", "Paused; F8 to resume");
             try { Release(); Publish(); } catch (Exception e) { Fault(e); }
         }
     }
@@ -95,14 +95,14 @@ public sealed class PlaybackEngine : IDisposable
         lock (gate)
         {
             if (state != PlaybackState.Paused) return;
-            state = PlaybackState.Countdown; deadline = clock.Now + countdown; message = "恢复倒计时：请切回游戏"; wake.Set(); Publish();
+            state = PlaybackState.Countdown; deadline = clock.Now + countdown; message = UiText.T("恢复倒计时：请切回游戏", "Resume countdown: switch back to the game"); wake.Set(); Publish();
         }
     }
     public void Stop()
     {
         lock (gate)
         {
-            state = PlaybackState.Idle; index = 0; position = 0; loop = 1; deadline = 0; message = "已停止，回到曲首";
+            state = PlaybackState.Idle; index = 0; position = 0; loop = 1; deadline = 0; message = UiText.T("已停止，回到曲首", "Stopped; returned to the beginning");
             try { Release(); Publish(); } catch (Exception e) { Fault(e); }
         }
     }
@@ -116,12 +116,12 @@ public sealed class PlaybackEngine : IDisposable
                 double now = clock.Now;
                 if (state == PlaybackState.Countdown && now >= deadline)
                 {
-                    if (!preview && !output.IsTargetForeground) { Pause("所选游戏未在前台，已暂停；切回后按继续热键"); return; }
-                    anchor = now - position; state = PlaybackState.Playing; message = preview ? "正在可视预演（不发送按键）" : "正在演奏";
+                    if (!preview && !output.IsTargetForeground) { Pause(UiText.T("所选游戏未在前台，已暂停；切回后按继续热键", "Selected game is not in the foreground. Paused; switch back and press Resume.")); return; }
+                    anchor = now - position; state = PlaybackState.Playing; message = preview ? UiText.T("正在可视预演（不发送按键）", "Visual preview (no keyboard input)") : UiText.T("正在演奏", "Playing");
                 }
                 if (state == PlaybackState.Playing)
                 {
-                    if (!preview && !output.IsTargetForeground) { Pause("游戏失去焦点，已暂停并释放按键"); return; }
+                    if (!preview && !output.IsTargetForeground) { Pause(UiText.T("游戏失去焦点，已暂停并释放按键", "Game lost focus. Paused and released keys.")); return; }
                     position = Math.Max(0, now - anchor);
                     int[] dueReleases = releases.Where(x => x.Value <= now).Select(x => x.Key).ToArray();
                     if (dueReleases.Length > 0)
@@ -131,7 +131,7 @@ public sealed class PlaybackEngine : IDisposable
                     }
                     if (index < score!.Notes.Count && score.Notes[index].Start <= position)
                     {
-                        if (position - score.Notes[index].Start > 0.25) { Pause("调度延迟超过 250 毫秒，已暂停，避免集中补发音符"); return; }
+                        if (position - score.Notes[index].Start > 0.25) { Pause(UiText.T("调度延迟超过 250 毫秒，已暂停，避免集中补发音符", "Scheduling is over 250 ms late. Paused to prevent a burst of notes.")); return; }
                         double time = score.Notes[index].Start;
                         var events = new List<NoteEvent>();
                         while (index < score.Notes.Count && Math.Abs(score.Notes[index].Start - time) < 0.000001) { events.Add(score.Notes[index]); index++; }
@@ -153,7 +153,7 @@ public sealed class PlaybackEngine : IDisposable
                     {
                         Release();
                         if (loop < loops) { loop++; index = 0; position = 0; anchor = now; }
-                        else { position = score.Duration; state = PlaybackState.Completed; message = "演奏完成"; Publish(); }
+                        else { position = score.Duration; state = PlaybackState.Completed; message = UiText.T("演奏完成", "Playback complete"); Publish(); }
                     }
                 }
                 if (state is PlaybackState.Playing or PlaybackState.Countdown && now - lastPublish >= 0.033) Publish();

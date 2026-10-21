@@ -1,8 +1,10 @@
 # 安全政策
 
+[简体中文](SECURITY.md) | [English](SECURITY.en.md)
+
 目前维护最新公开版本及 `main` 分支；旧版本请先升级后复现。
 
-请通过 [GitHub 私密漏洞报告](https://github.com/Diana6324/GuitarNTE/security/advisories/new) 提交可能涉及任意代码执行、文件越界写入、敏感数据泄露或权限问题的报告。请勿在公开 Issue 中发布漏洞利用细节、密钥或私人曲库。若该入口不可用，可先提交不包含漏洞细节的 Issue，请维护者提供私下报告渠道。
+请通过 [GitHub 私密漏洞报告](https://github.com/Diana6324/NTE-Piano-Guitar-Player/security/advisories/new) 提交可能涉及任意代码执行、文件越界写入、敏感数据泄露或权限问题的报告。请勿在公开 Issue 中发布漏洞利用细节、密钥或私人曲库。若该入口不可用，可先提交不包含漏洞细节的 Issue，请维护者提供私下报告渠道。
 
 报告应包含受影响版本、复现步骤、最小示例和影响范围。项目由社区维护，不承诺固定响应时限。
 
